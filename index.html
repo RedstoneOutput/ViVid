@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViVid | Stream Beyond</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0c; 
+            color: #f0f0f0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.5;
+            scroll-behavior: smooth; 
+        }
+
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            transition: all 0.4s ease-in-out;
+            z-index: 1000;
+        }
+
+        .navbar.nav-black {
+            background-color: #0a0a0c;
+            padding: 12px 4%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            border-bottom: 1px solid #6366f1;
+        }
+
+        .logo {
+            color: #6366f1;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-decoration: none;
+        }
+
+        .logo span { color: #a5b4fc; }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            margin-left: 40px;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+            margin: 0 30px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-bar:focus {
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .auth-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .sync-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #a5b4fc;
+            border: 1px solid #6366f1;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sync-btn:hover { background: #6366f1; color: white; }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #6366f1;
+        }
+
+
+        .hero {
+            height: 95vh;
+            background: linear-gradient(to top, #0a0a0c 5%, transparent 50%),
+                        linear-gradient(to right, rgba(10,10,12,0.9) 20%, transparent 90%), 
+                        url('https://www.navyajha.com/content/images/2024/01/interstellar.jpeg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 4%;
+        }
+
+        .hero-content { max-width: 650px; }
+
+        .hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #fff, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-description { font-size: 1.1rem; color: #94a3b8; margin-bottom: 30px; }
+
+        .hero-buttons { display: flex; gap: 15px; }
+
+        .hero-buttons button {
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .play-btn { background-color: #6366f1; color: white; }
+        .info-btn { background-color: rgba(255, 255, 255, 0.1); color: white; backdrop-filter: blur(10px); }
+
+
+        .filter-bar {
+            padding: 20px 4%;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .filter-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+
+        .main-container {
+            margin-top: 0;
+            padding-bottom: 80px;
+            position: relative;
+            z-index: 10;
+        }
+
+
+        .row { margin-bottom: 40px; padding-left: 4%; }
+        .row h2 { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; margin-bottom: 15px; }
+
+        .thumbnails {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scrollbar-width: none; 
+        }
+
+        .thumbnails::-webkit-scrollbar { display: none; }
+
+        .card {
+            min-width: 280px;
+            height: 158px;
+            background-color: #1e1e24;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            flex-shrink: 0; 
+        }
+
+        .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+        .card:hover { transform: scale(1.1); border: 2px solid #6366f1; z-index: 10; }
+
+        .watchlist-add {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: 0.3s;
+            font-weight: bold;
+            color: #6366f1;
+            z-index: 5;
+        }
+
+        .card:hover .watchlist-add { opacity: 1; }
+
+
+        #watchlist-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e1e24;
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 2000;
+            width: 95%;
+            max-width: 900px;
+            border: 1px solid #6366f1;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-close { float: right; cursor: pointer; color: #6366f1; font-size: 1.5rem; font-weight: bold; }
+
+
+        .watchlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .watchlist-card {
+            background: #13131a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .watchlist-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+        }
+
+        .watchlist-info {
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+
+        .watchlist-category {
+            color: #6366f1;
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+
+        .remove-item {
+            color: #ef4444;
+            cursor: pointer;
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .add-manual-container {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-manual-container input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #0a0a0c;
+            color: white;
+        }
+
+
+        #scrollTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: 0.3s;
+        }
+
+        #scrollTopBtn:hover {
+            transform: translateY(-5px);
+            background-color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar" id="navbar">
+        <a href="#" class="logo">VI<span>VID</span></a>
+        
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search movies..." onkeyup="handleSearch()">
+        </div>
+
+        <nav>
+            <ul class="nav-links">
+              
+                <li><a href="#" id="view-watchlist">My Watchlist</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <button class="sync-btn" id="syncBtn" onclick="refreshMovieDatabase()"> Refresh Data</button>
+            <button class="auth-btn" id="loginBtn">User: Guest</button>
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" class="avatar">
+        </div>
+    </header>
+
+    <button id="scrollTopBtn" onclick="window.scrollTo(0, 0)"></button>
+
+    <div id="watchlist-modal">
+        <span class="modal-close" id="close-modal"></span>
+        <h2>Your Watchlist</h2>
+        
+        <div class="add-manual-container">
+            <input type="text" id="manual-movie-input" placeholder="Add a movie manually...">
+            <button class="auth-btn" onclick="addManualMovie()">Add</button>
+        </div>
+
+        <div id="watchlist-items" class="watchlist-grid"></div>
+    </div>
+
+    <section class="hero" id="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Interstellar</h1>
+            <p class="hero-description">With humanity teetering on the brink of extinction, a group of astronauts travels through a wormhole in search of another inhabitable planet.</p>
+            <div class="hero-buttons">
+                <button class="play-btn" onclick="openPlayer('Interstellar')"> Stream</button>
+           
+                 <button class="info-btn" onclick="addToWatchlist('Interstellar')">+ Watchlist</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterGenre('All', this)">All</button>
+        <button class="filter-btn" onclick="filterGenre('Sci-Fi', this)">Sci-Fi</button>
+        <button class="filter-btn" onclick="filterGenre('Horror', this)">Horror</button>
+        <button class="filter-btn" onclick="filterGenre('Action', this)">Action</button>
+        <button class="filter-btn" onclick="filterGenre('Drama', this)">Drama</button>
+       
+         <button class="filter-btn" onclick="filterGenre('Thriller', this)">Thriller</button>
+    </div>
+
+    <div class="main-container" id="content-rows">
+        <div class="row" id="recommendation-row" style="display: none;">
+            <h2 id="rec-title">Recommended for You</h2>
+            <div class="thumbnails" id="recommendation-grid"></div>
+        </div>
+        
+        <div class="row" id="search-results-row" style="display: none;">
+            <h2 id="search-results-title">Search Results</h2>
+            <div class="thumbnails" id="search-results-grid"></div>
+        </div>
+    </div>
+
+    <script>
+
+        const { Client, Databases, ID, Account, Query } = Appwrite;
+        const client = new Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
+            .setProject('69aa409200148bb7edfa');
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        const DB_ID = '69aa41910001b6457cb0'; 
+        const COL_ID = 'watchlists';
+        let movieData = [
+            { 
+                name: 'Interstellar', 
+                genre: 'Sci-Fi',
+                source: 'https://player.videasy.net/movie/157336', 
+                poster: 'https://fc04.deviantart.net/fs71/f/2014/045/a/2/interstellar_by_visuasys-d6ibj30.jpg' 
+            },
+ 
+            { 
+                name: 'Five Nights at Freddys', 
+                genre: 'Horror',
+                source: 'https://player.videasy.net/movie/507089', 
+                poster: 'https://m.media-amazon.com/images/M/MV5BNzFkMDE2ZmEtOWMwNy00MWM2LThlNjMtZWQzNWY5MTJjZjcxXkEyXkFqcGc@._V1_.jpg' 
+            },
+ 
+           { 
+                name: 'M3gan', 
+                genre: 'Horror',
+                source: 'https://player.videasy.net/movie/536554', 
+                poster: 'https://www.joblo.com/wp-content/uploads/2022/10/m3gan-trailer-featured-1280x720.jpg' 
+            },
+    
+       { 
+                name: 'Tremors', 
+                genre: 'Horror',
+                source: 'https://player.videasy.net/movie/9362', 
+                poster: 'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12070_p_v10_aj.jpg' 
+            },
+       
+   { 
+                name: 'Back to the Future', 
+                genre: 'Sci-Fi',
+                source: 'https://player.videasy.net/movie/105', 
+                poster: 'https://i.ytimg.com/vi/Am4JRnVQeh4/maxresdefault.jpg' 
+            },
+       
+  { 
+                name: 'Supernatural', 
+                genre: 'Drama',
+                source: 'https://player.videasy.net/tv/1622/1/1', 
+                poster: 'https://m.media-amazon.com/images/S/pv-target-images/3b871fa3954a785c5c1018c722704e9004dde85f0abd040b6b334dd8835e0846.jpg' 
+            },
+          
+   { 
+  
+               name: 'The Rookie', 
+                genre: 'Drama',
+                source: 'https://player.videasy.net/tv/79744/1/1', 
+                poster: 'https://whatsondisneyplus.b-cdn.net/wp-content/uploads/2025/12/the-rookie.webp' 
+            },
+            { 
+     
+            name: 'Peacemaker', 
+                genre: 'Action',
+                source: 'https://player.videasy.net/tv/110492/1/1', 
+                poster: 'https://i0.wp.com/multiverseofcolor.com/wp-content/uploads/2025/08/new-poster-for-peacemaker-season-2.png?resize=1080%2C748&ssl=1' 
+            },
+            { 
+  
+        name: 'You', 
+                genre: 'Thriller',
+                source: 'https://player.videasy.net/tv/78191/1/1', 
+                poster: 'https://sm.mashable.com/t/mashable_me/photo/default/untitled-2025-04-29t113036500_sm3y.1248.jpg' 
+            },
+          
+   { name: 'The Matrix', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/603', poster: 'https://i0.wp.com/www.michigandaily.com/wp-content/uploads/2020/11/Screen-Shot-2021-05-19-at-12.59.41-PM.png?fit=2400%2C1600&ssl=1' },
+            { name: 'Inception', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/27205', poster: 'https://miro.medium.com/v2/resize:fit:1400/1*xLahrUiFfXAs8s_Q8JKcbA@2x.jpeg' },
+            { name: 'Stranger Things', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/66732/1/1', poster: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png' },
+            { name: 'Blade Runner 2049', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/335984', poster: 'https://occ-0-8407-2219.1.nflxso.net/dnm/api/v6/6AYY37jfdO6hpXcMjf9Yu5cnmO0/AAAABaHT4U_VI3Hpghhv_yb3A98yiUsAK8a5E3lkBU9zp88a0HprtBtvvbcCwXhfxR_9xqQfkzY9hwKe8G3S5TwNT7J9hpwRuDk8zyeD.jpg?r=ad3' },
+            { name: 'Dune', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/438631', poster: 'https://ntvb.tmsimg.com/assets/p16645155_v_h8_ae.jpg?w=960&h=540' },
+ 
+       
+            { name: 'The Conjuring', genre: 'Horror', source: 'https://player.videasy.net/movie/138843', poster: 'https://ntvb.tmsimg.com/assets/p9379266_v_h10_ab.jpg?w=1280&h=720' },
+            { name: 'IT', genre: 'Horror', source: 'https://player.videasy.net/movie/346364', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/1fef0800-258f-49f5-84a5-6a1f88173769/a8a0597f-66ba-4b11-af95-c392d3983838?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
+            { name: 'A Quiet Place', genre: 'Horror', source: 'https://player.videasy.net/movie/447332', poster: 'https://thecollision.org/wp-content/uploads/2019/01/A-Quiet-Place-banner-1.jpg' },
+            { name: 'Halloween', genre: 'Horror', source: 'https://player.videasy.net/movie/424139', poster: 'https://static01.nyt.com/images/2018/10/19/arts/19Halloween1/19Halloween1-videoSixteenByNineJumbo1600.jpg' },
+            { name: 
+ 'The Dark Knight', genre: 'Action', source: 'https://player.videasy.net/movie/155', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-joDcLDH_T5M67nb9suEPmVsQjx6zM5gaMg&s' },
+            { name: 'John Wick', genre: 'Action', source: 'https://player.videasy.net/movie/245891', poster: 'https://spoilertown.com/wp-content/uploads/2025/05/john-wick-2014.webp' },
+            { name: 'Top Gun: Maverick', genre: 'Action', source: 'https://player.videasy.net/movie/361743', poster: 'https://thumbnails.cbsig.net/_x/w1200/CBS_Production_Entertainment_VMS/2022/10/26/2091444291941/TGMAV_SAlone_16_9_1920x1080_1781067_1920x1080.jpg' },
+            { name: 'Mad Max: Fury Road', genre: 'Action', source: 'https://player.videasy.net/movie/76341', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/8cde025a-223d-4879-9336-3d5f6c9d0c55/e8efbfc9-8d45-11ee-a91d-02038fb3271b?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
+            { name: 'The Boys', genre: 'Action', source: 'https://player.videasy.net/tv/76479/1/1', poster: 'https://m.media-amazon.com/images/M/MV5BZTIwNjdjZmUtZDJmOC00M2RmLTg2NTItMTMzZjZhNTk3YjVmXkEyXkFqcGdeQWFybm8@._V1_.jpg' 
+},
+     
+            { name: 'Succession', genre: 'Drama', source: 'https://player.videasy.net/tv/76331/1/1', poster: 'https://pixel.disco.nowtv.com/pcms/7efbf75e-064b-11f0-a9e8-335d0603481e/LAND_16_9?proposition=NOWOTT&language=en-GB&versionId=53251a10-5152-506c-b92c-624a2d4c50f8' },
+            { name: 'The Bear', genre: 'Drama', source: 'https://player.videasy.net/tv/136315/1/1', poster: 'https://img3.hulu.com/user/v3/artwork/05eb6a8e-90ed-4947-8c0b-e6536cbddd5f?base_image_bucket_name=image_manager&base_image=0560d824-aa9c-488f-96eb-20caba663b18&region=US&format=webp&size=952x536' },
+            { name: 'Oppenheimer', genre: 'Drama', source: 'https://player.videasy.net/movie/872585', poster: 'https://cdn.theplaylist.net/wp-content/uploads/2023/05/08064650/Oppenheimer-Christopher-Nolan.jpg' },
+            { name: 'Breaking Bad', genre: 'Drama', source: 'https://player.videasy.net/tv/1396/1/1', poster: 'https://fromabrooklynbasement.com/wp-content/uploads/2013/11/breaking-bad.jpg' },
+            { name: 
+ 'The Last of Us', genre: 'Drama', source: 'https://player.videasy.net/tv/100088/1/1', poster: 'https://beam-images.warnermediacdn.com/2025-03/the-last-of-us-s2-og-image.jpg?host=wbd-dotcom-drupal-prd-us-east-1.s3.amazonaws.com' },
+            { name: 'Shutter Island', genre: 'Thriller', source: 'https://player.videasy.net/movie/11324', poster: 'https://miro.medium.com/1*dxOujk_R8RBsd6opk20pHg.jpeg' },
+            { name: 'Severance', genre: 'Thriller', source: 'https://player.videasy.net/tv/95396/1/1', poster: 'https://snworksceo.imgix.net/cds/6ad62cbd-3967-46a5-8ca6-afe75fa615aa.sized-1000x1000.jpg?w=1000&dpr=2' },
+            { name: 'Parasite', genre: 'Thriller', source: 'https://player.videasy.net/movie/496243', poster: 'https://i.ytimg.com/vi/SEUXfv87Wpk/sddefault.jpg' },
+    
+         { name: 'Prison Break', genre: 'Thriller', source: 'https://player.videasy.net/tv/2288/1/1', poster: 'https://occ-0-8407-2218.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABUaMFyRP15OajINlQ2JNRS6ig26Gy8l9ItNdaodHl1iBHGGAsY5MaK0IyxZX69cADj-fkgczz01pg4Nfj0CJ9Gfpcnf9uhgSAk2J.webp?r=dbe' },
+       
+            { name: 'Black Mirror', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/42009/1/1', poster: 'https://www.tvinsider.com/wp-content/uploads/2025/03/black-mirror-1-770x433.jpg' }
+        ];
+
+        async function refreshMovieDatabase() {
+            console.log("Checking for updates...");
+            renderAllRows();
+            renderRecommendations();
+        }
+
+
+        const navbar = document.getElementById('navbar');
+        const scrollBtn = document.getElementById('scrollTopBtn');
+        window.addEventListener('scroll', () => {
+            window.scrollY > 80 ? navbar.classList.add('nav-black') : navbar.classList.remove('nav-black');
+            window.scrollY > 500 ? scrollBtn.style.display = 'block' : scrollBtn.style.display = 'none';
+        });
+
+
+        async function handleSearch() {
+            const query = document.getElementById('searchBar').value.toLowerCase().trim();
+            const searchRow = document.getElementById('search-results-row');
+            const searchGrid = document.getElementById('search-results-grid');
+            
+            if (query === "") {
+                searchRow.style.display = 'none';
+                document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'block');
+                return;
+            }
+
+            document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'none');
+            searchRow.style.display = 'block';
+
+
+            let existingMatches = movieData.filter(m => m.name.toLowerCase().includes(query));
+
+
+            let remoteMatches = [];
+            if (query.length > 2) {
+                try {
+
+                    const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                    const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    remoteMatches = data.results
+                        .filter(res => res.media_type === 'movie' || res.media_type === 'tv')
+                        .map(res => ({
+                            name: res.title || res.name,
+                            genre: 'Global Discovery',
+                            source: `https://player.videasy.net/${res.media_type}/${res.id}${res.media_type === 'tv' ? '/1/1' : ''}`,
+                            poster: res.backdrop_path ? `https://image.tmdb.org/t/p/w500${res.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${(res.title || res.name).replace(/ /g, '+')}`
+                        }));
+                } catch (err) {
+                    console.error("Remote pull failed. Reverting to local search.", err);
+                }
+            }
+
+
+            const combined = [...existingMatches, ...remoteMatches];
+            searchGrid.innerHTML = combined.map(movie => createCardHTML(movie)).join('');
+        }
+
+
+        let activeGenres = new Set();
+        function filterGenre(genre, btn) {
+            const allBtn = document.querySelector('.filter-btn[onclick*="\'All\'"]');
+            if (genre === 'All') {
+                activeGenres.clear();
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                allBtn.classList.add('active');
+            } else {
+                allBtn.classList.remove('active');
+                if (activeGenres.has(genre)) {
+                    activeGenres.delete(genre);
+                    btn.classList.remove('active');
+                } else {
+                    activeGenres.add(genre);
+                    btn.classList.add('active');
+                }
+
+                if (activeGenres.size === 0) {
+                    allBtn.classList.add('active');
+                }
+            }
+
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const movieGenre = card.getAttribute('data-genre');
+                if (activeGenres.size === 0 || activeGenres.has(movieGenre)) {
+                    card.style.display = 'block';
+                } else {
+                 
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+
+        function renderAllRows() {
+            const container = document.getElementById('content-rows');
+            
+
+            const recRow = document.getElementById('recommendation-row');
+            const searchRow = document.getElementById('search-results-row');
+            container.innerHTML = '';
+            container.appendChild(recRow);
+            container.appendChild(searchRow);
+
+
+            const genres = [...new Set(movieData.map(m => m.genre))];
+
+
+            renderTrendingRow(container);
+
+
+            genres.forEach(genre => {
+                const row = document.createElement('div');
+                row.className = 'row';
+                
+                const title = document.createElement('h2');
+                title.innerText = genre + " Collection";
+                
+                const thumbs = document.createElement('div');
+                thumbs.className = 'thumbnails';
+                
+                const moviesInGenre = movieData.filter(m => m.genre === genre);
+                thumbs.innerHTML = moviesInGenre.map(movie => createCardHTML(movie)).join('');
+                
+                row.appendChild(title);
+                row.appendChild(thumbs);
+                container.appendChild(row);
+            });
+        }
+
+        function renderTrendingRow(container) {
+            const row = document.createElement('div');
+            row.className = 'row';
+            row.id = 'trending-row';
+            
+            const title = document.createElement('h2');
+            title.id = 'trending-title';
+            title.innerText = "Trending Now";
+            
+            const thumbs = document.createElement('div');
+            thumbs.className = 'thumbnails';
+            thumbs.id = 'trending-grid';
+            
+
+            thumbs.innerHTML = movieData.map(movie => createCardHTML(movie)).join('');
+            
+            row.appendChild(title);
+            row.appendChild(thumbs);
+            container.appendChild(row);
+        }
+
+        function createCardHTML(movie) {
+
+            return `
+                <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" onclick='openDynamicPlayer(${JSON.stringify(movie).replace(/'/g, "&apos;")})'>
+                    <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
+                    <img src="${movie.poster}" alt="${movie.name}">
+                </div>
+            `;
+        }
+
+
+        let userPreferences = JSON.parse(localStorage.getItem('vividPrefs')) ||
+[];
+
+        function trackPreference(genre) {
+            userPreferences.push(genre);
+
+            if(userPreferences.length > 20) userPreferences.shift();
+            localStorage.setItem('vividPrefs', JSON.stringify(userPreferences));
+            renderRecommendations();
+        }
+
+        function getTopGenre() {
+            if (userPreferences.length === 0) return null;
+            const counts = {};
+            userPreferences.forEach(g => counts[g] = (counts[g] || 0) + 1);
+            return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        }
+
+        function renderRecommendations() {
+            const topGenre = getTopGenre();
+            const recRow = document.getElementById('recommendation-row');
+            const recGrid = document.getElementById('recommendation-grid');
+
+            if (!topGenre) {
+                recRow.style.display = 'none';
+                return;
+            }
+
+
+            const recommendations = movieData.filter(m => m.genre === topGenre && !myWatchlist.includes(m.name));
+            if (recommendations.length > 0) {
+                recRow.style.display = 'block';
+                recGrid.innerHTML = recommendations.map(movie => createCardHTML(movie)).join('');
+            } else {
+                recRow.style.display = 'none';
+            }
+        }
+
+
+
+        let myWatchlist = JSON.parse(localStorage.getItem('vividWatchlist')) ||
+[];
+
+        async function addToWatchlist(movieName) {
+            if(!myWatchlist.includes(movieName)) {
+
+                myWatchlist.push(movieName);
+                localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+                
+
+                const movie = movieData.find(m => m.name === movieName);
+                if(movie) trackPreference(movie.genre);
+
+                try {
+                    await databases.createDocument(DB_ID, COL_ID, ID.unique(), { movieName: movieName });
+                    console.log("Sync Success: Movie added to Appwrite.");
+                } catch (error) {
+                    console.error("Cloud save failed. Using local storage.", error);
+                }
+                
+                alert(movieName + " added!");
+                renderWatchlist();
+                renderRecommendations();
+            } else {
+                alert("Already in your list!");
+            }
+        }
+
+        function addManualMovie() {
+            const input = document.getElementById('manual-movie-input');
+            const name = input.value.trim();
+            if (name) {
+                addToWatchlist(name);
+                input.value = '';
+                renderWatchlist();
+            }
+        }
+
+        async function removeFromWatchlist(movieName) {
+
+            myWatchlist = myWatchlist.filter(m => m !== movieName);
+            localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+
+
+            try {
+                const response = await databases.listDocuments(DB_ID, COL_ID, [Query.equal('movieName', movieName)]);
+                if (response.documents.length > 0) {
+                    await databases.deleteDocument(DB_ID, COL_ID, response.documents[0].$id);
+                }
+            } catch (e) {
+                console.error("Cloud removal failed. Check permissions.", e);
+            }
+            renderWatchlist();
+            renderRecommendations();
+        }
+
+
+        function openDynamicPlayer(movieObj) {
+            openPlayer(movieObj.name, movieObj.source);
+        }
+
+        function openPlayer(name, customSource = null) {
+            const movie = movieData.find(m => m.name === name);
+            if(movie) trackPreference(movie.genre);
+            
+            let source = customSource || (movie && movie.source) || `https://player.videasy.net/movie/${name.replace(/ /g, '-')}`;
+            
+            if(source.includes('videasy.net')) {
+                const separator = source.includes('?') ? '&' : '?';
+                const params = ["color=8B5CF6", "nextEpisode=true", "autoplayNextEpisode=true", "episodeSelector=true", "overlay=true"].join('&');
+                source += separator + params; 
+            }
+
+            const newWindow = window.open('about:blank', '_blank');
+            if (newWindow) {
+                newWindow.document.write(`
+                    <html>
+                        <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
+                        <body>
+                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                        </body>
+                    </html>
+                `);
+                newWindow.document.close();
+            } else {
+                alert("Please allow popups to stream.");
+            }
+        }
+
+        const modal = document.getElementById('watchlist-modal');
+        const listDisplay = document.getElementById('watchlist-items');
+
+        function renderWatchlist() {
+            listDisplay.innerHTML = myWatchlist.map(itemName => {
+                const movie = movieData.find(m => m.name === itemName);
+                const posterUrl = movie ? movie.poster : `https://placehold.co/200x300/1e1e24/6366f1?text=${itemName.replace(/ /g, '+')}`;
+                const genreLabel = movie ? movie.genre : 'Manual';
+       
+                
+                return `
+                    <div class="watchlist-card">
+                        <img src="${posterUrl}" alt="${itemName}" onclick="openPlayer('${itemName}')" style="cursor:pointer;">
+                        <div class="watchlist-info">
+                            <span class="watchlist-category">${genreLabel}</span>
+                            <strong>${itemName}</strong>
+                            <span class="remove-item" onclick="removeFromWatchlist('${itemName}')">REMOVE</span>
+                        </div>
+                    </div>
+                `;
+            }).join('') ||
+"<p>Your list is empty</p>";
+        }
+
+        document.getElementById('view-watchlist').onclick = () => {
+            renderWatchlist();
+            modal.style.display = 'block';
+        };
+
+        document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+        window.onload = async () => {
+            renderAllRows();
+            const savedUser = localStorage.getItem('vividUser');
+            if(savedUser) document.getElementById('loginBtn').innerText = "User: " + savedUser;
+            try {
+                await account.getSession('current');
+            } catch (err) {
+                try {
+                    await account.createAnonymousSession();
+                } catch (sessionErr) {
+                    console.warn("Cloud features limited. Local storage active.");
+                }
+            }
+
+
+            try {
+                const cloudData = await databases.listDocuments(DB_ID, COL_ID);
+                cloudData.documents.forEach(doc => {
+                    if (!myWatchlist.includes(doc.movieName)) {
+                        myWatchlist.push(doc.movieName);
+                    }
+                });
+                localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+            } catch (e) {
+                console.warn("Cloud sync unavailable. Operating in local-only mode.");
+            }
+            
+
+            renderWatchlist();
+            renderRecommendations(); 
+        };
+    </script>
+</body>
+</html>
