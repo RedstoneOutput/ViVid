@@ -960,7 +960,7 @@
             
             if(source.includes('videasy.net')) {
                 const separator = source.includes('?') ? '&' : '?';
-                const params = ["color=8B5CF6", "nextEpisode=true", "autoplayNextEpisode=true", "episodeSelector=true", "overlay=true"].join('&');
+                const params = ["nextEpisode=true", "autoplayNextEpisode=true", "episodeSelector=true", "overlay=true", "color=6366f1"].join('&');
                 source += separator + params; 
             }
 
@@ -970,7 +970,15 @@
                     <html>
                         <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
                         <body>
-                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                                <iframe 
+                                    src="${source}" 
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                                    frameborder="0" 
+                                    allowfullscreen 
+                                    allow="autoplay; encrypted-media; gyroscope; picture-in-picture; payment; usb; vr; camera; microphone; accelerometer; display-capture; autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock; web-share"
+                                ></iframe>
+                            </div>
                         </body>
                     </html>
                 `);
