@@ -54,6 +54,13 @@
             font-weight: 800;
             letter-spacing: -1px;
             text-decoration: none;
+            animation: logoPulse 3s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #6366f1); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 15px #6366f1); }
         }
 
         .logo span { color: #a5b4fc; }
@@ -673,58 +680,73 @@
         }
 
 
-        function renderAllRows() {
+        async function renderAllRows() {
             const container = document.getElementById('content-rows');
-            
-
             const recRow = document.getElementById('recommendation-row');
             const searchRow = document.getElementById('search-results-row');
             container.innerHTML = '';
             container.appendChild(recRow);
             container.appendChild(searchRow);
 
+            await renderTrendingRow(container);
 
             const genres = [...new Set(movieData.map(m => m.genre))];
-
-
-            renderTrendingRow(container);
-
-
-            genres.forEach(genre => {
+            for (const genre of genres) {
                 const row = document.createElement('div');
                 row.className = 'row';
-                
                 const title = document.createElement('h2');
                 title.innerText = genre + " Collection";
-                
                 const thumbs = document.createElement('div');
                 thumbs.className = 'thumbnails';
                 
-                const moviesInGenre = movieData.filter(m => m.genre === genre);
-                thumbs.innerHTML = moviesInGenre.map(movie => createCardHTML(movie)).join('');
+                let genreContent = movieData.filter(m => m.genre === genre);
                 
+                try {
+                    const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                    const tmdbGenreMap = { 'Sci-Fi': 878, 'Horror': 27, 'Action': 28, 'Drama': 18, 'Thriller': 53 };
+                    const gId = tmdbGenreMap[genre];
+                    if (gId) {
+                        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}`);
+                        const d = await res.json();
+                        const fetched = d.results.slice(0, 5).map(r => ({
+                            name: r.title, genre: genre, source: `https://player.videasy.net/movie/${r.id}`,
+                            poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : genreContent[0].poster
+                        }));
+                        genreContent = [...genreContent, ...fetched];
+                    }
+                } catch (e) {}
+
+                thumbs.innerHTML = genreContent.map(movie => createCardHTML(movie)).join('');
                 row.appendChild(title);
                 row.appendChild(thumbs);
                 container.appendChild(row);
-            });
+            }
         }
 
-        function renderTrendingRow(container) {
+        async function renderTrendingRow(container) {
             const row = document.createElement('div');
             row.className = 'row';
             row.id = 'trending-row';
-            
             const title = document.createElement('h2');
-            title.id = 'trending-title';
             title.innerText = "Trending Now";
-            
             const thumbs = document.createElement('div');
             thumbs.className = 'thumbnails';
-            thumbs.id = 'trending-grid';
             
+            let trendingList = [...movieData].sort(() => 0.5 - Math.random()).slice(0, 8);
+            
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
+                const d = await res.json();
+                const fetched = d.results.slice(0, 10).map(r => ({
+                    name: r.title || r.name, genre: 'Trending',
+                    source: `https://player.videasy.net/${r.media_type}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
+                    poster: `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
+                }));
+                trendingList = [...fetched, ...trendingList];
+            } catch (e) {}
 
-            thumbs.innerHTML = movieData.map(movie => createCardHTML(movie)).join('');
-            
+            thumbs.innerHTML = trendingList.map(movie => createCardHTML(movie)).join('');
             row.appendChild(title);
             row.appendChild(thumbs);
             container.appendChild(row);
@@ -904,7 +926,7 @@
 
         document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
         window.onload = async () => {
-            renderAllRows();
+            await renderAllRows();
             const savedUser = localStorage.getItem('vividUser');
             if(savedUser) document.getElementById('loginBtn').innerText = "User: " + savedUser;
             try {
