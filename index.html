@@ -402,6 +402,14 @@
             font-size: 1.5rem;
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #scrollTopBtn::after {
+            content: '▲';
+            font-size: 1rem;
         }
 
         #scrollTopBtn:hover {
@@ -417,6 +425,38 @@
         }
         #discover-grid .card {
             min-width: unset;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 4%;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .search-container {
+                order: 3;
+                max-width: 100%;
+                margin: 0;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero-title {
+                font-size: 3rem;
+            }
+            .hero-description {
+                font-size: 1rem;
+            }
+            .card {
+                min-width: 200px;
+            }
+            .card-img-container {
+                height: 112px;
+            }
+            #discover-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
         }
     </style>
 </head>
@@ -520,7 +560,7 @@
         const scrollBtn = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => {
             window.scrollY > 80 ? navbar.classList.add('nav-black') : navbar.classList.remove('nav-black');
-            window.scrollY > 500 ? scrollBtn.style.display = 'block' : scrollBtn.style.display = 'none';
+            window.scrollY > 500 ? scrollBtn.style.display = 'flex' : scrollBtn.style.display = 'none';
 
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
                 if (!isFetchingMore) loadMoreContent();
@@ -654,7 +694,7 @@
             try {
                 const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
                 const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${currentPage}&sort_by=popularity.desc`);
-                const d = await response.json();
+                const d = await res.json();
                 const fetched = d.results.map(r => ({
                     name: r.title, genre: 'Discover', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                     source: `https://player.videasy.net/movie/${r.id}`,
@@ -930,7 +970,7 @@
                     <html>
                         <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
                         <body>
-                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock allow-popups" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock" allowfullscreen allow="autoplay; encrypted-media"></iframe>
                         </body>
                     </html>
                 `);
