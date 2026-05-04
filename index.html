@@ -489,104 +489,7 @@
 
         const DB_ID = '69aa41910001b6457cb0'; 
         const COL_ID = 'watchlists';
-        let movieData = [
-            { 
-                name: 'Interstellar', 
-                genre: 'Sci-Fi',
-                source: 'https://player.videasy.net/movie/157336', 
-                poster: 'https://fc04.deviantart.net/fs71/f/2014/045/a/2/interstellar_by_visuasys-d6ibj30.jpg' 
-            },
- 
-            { 
-                name: 'Five Nights at Freddys', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/507089', 
-                poster: 'https://m.media-amazon.com/images/M/MV5BNzFkMDE2ZmEtOWMwNy00MWM2LThlNjMtZWQzNWY5MTJjZjcxXkEyXkFqcGc@._V1_.jpg' 
-            },
- 
-           { 
-                name: 'M3gan', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/536554', 
-                poster: 'https://www.joblo.com/wp-content/uploads/2022/10/m3gan-trailer-featured-1280x720.jpg' 
-            },
-    
-       { 
-                name: 'Tremors', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/9362', 
-                poster: 'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12070_p_v10_aj.jpg' 
-            },
-       
-   { 
-                name: 'Back to the Future', 
-                genre: 'Sci-Fi',
-                source: 'https://player.videasy.net/movie/105', 
-                poster: 'https://i.ytimg.com/vi/Am4JRnVQeh4/maxresdefault.jpg' 
-            },
-       
-  { 
-                name: 'Supernatural', 
-                genre: 'Drama',
-                source: 'https://player.videasy.net/tv/1622/1/1', 
-                poster: 'https://m.media-amazon.com/images/S/pv-target-images/3b871fa3954a785c5c1018c722704e9004dde85f0abd040b6b334dd8835e0846.jpg' 
-            },
-          
-   { 
-  
-               name: 'The Rookie', 
-                genre: 'Drama',
-                source: 'https://player.videasy.net/tv/79744/1/1', 
-                poster: 'https://whatsondisneyplus.b-cdn.net/wp-content/uploads/2025/12/the-rookie.webp' 
-            },
-            { 
-     
-            name: 'Peacemaker', 
-                genre: 'Action',
-                source: 'https://player.videasy.net/tv/110492/1/1', 
-                poster: 'https://i0.wp.com/multiverseofcolor.com/wp-content/uploads/2025/08/new-poster-for-peacemaker-season-2.png?resize=1080%2C748&ssl=1' 
-            },
-            { 
-  
-        name: 'You', 
-                genre: 'Thriller',
-                source: 'https://player.videasy.net/tv/78191/1/1', 
-                poster: 'https://sm.mashable.com/t/mashable_me/photo/default/untitled-2025-04-29t113036500_sm3y.1248.jpg' 
-            },
-          
-   { name: 'The Matrix', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/603', poster: 'https://i0.wp.com/www.michigandaily.com/wp-content/uploads/2020/11/Screen-Shot-2021-05-19-at-12.59.41-PM.png?fit=2400%2C1600&ssl=1' },
-            { name: 'Inception', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/27205', poster: 'https://miro.medium.com/v2/resize:fit:1400/1*xLahrUiFfXAs8s_Q8JKcbA@2x.jpeg' },
-            { name: 'Stranger Things', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/66732/1/1', poster: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png' },
-            { name: 'Blade Runner 2049', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/335984', poster: 'https://occ-0-8407-2219.1.nflxso.net/dnm/api/v6/6AYY37jfdO6hpXcMjf9Yu5cnmO0/AAAABaHT4U_VI3Hpghhv_yb3A98yiUsAK8a5E3lkBU9zp88a0HprtBtvvbcCwXhfxR_9xqQfkzY9hwKe8G3S5TwNT7J9hpwRuDk8zyeD.jpg?r=ad3' },
-            { name: 'Dune', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/438631', poster: 'https://ntvb.tmsimg.com/assets/p16645155_v_h8_ae.jpg?w=960&h=540' },
- 
-       
-            { name: 'The Conjuring', genre: 'Horror', source: 'https://player.videasy.net/movie/138843', poster: 'https://ntvb.tmsimg.com/assets/p9379266_v_h10_ab.jpg?w=1280&h=720' },
-            { name: 'IT', genre: 'Horror', source: 'https://player.videasy.net/movie/346364', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/1fef0800-258f-49f5-84a5-6a1f88173769/a8a0597f-66ba-4b11-af95-c392d3983838?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
-            { name: 'A Quiet Place', genre: 'Horror', source: 'https://player.videasy.net/movie/447332', poster: 'https://thecollision.org/wp-content/uploads/2019/01/A-Quiet-Place-banner-1.jpg' },
-            { name: 'Halloween', genre: 'Horror', source: 'https://player.videasy.net/movie/424139', poster: 'https://static01.nyt.com/images/2018/10/19/arts/19Halloween1/19Halloween1-videoSixteenByNineJumbo1600.jpg' },
-            { name: 
- 'The Dark Knight', genre: 'Action', source: 'https://player.videasy.net/movie/155', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-joDcLDH_T5M67nb9suEPmVsQjx6zM5gaMg&s' },
-            { name: 'John Wick', genre: 'Action', source: 'https://player.videasy.net/movie/245891', poster: 'https://spoilertown.com/wp-content/uploads/2025/05/john-wick-2014.webp' },
-            { name: 'Top Gun: Maverick', genre: 'Action', source: 'https://player.videasy.net/movie/361743', poster: 'https://thumbnails.cbsig.net/_x/w1200/CBS_Production_Entertainment_VMS/2022/10/26/2091444291941/TGMAV_SAlone_16_9_1920x1080_1781067_1920x1080.jpg' },
-            { name: 'Mad Max: Fury Road', genre: 'Action', source: 'https://player.videasy.net/movie/76341', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/8cde025a-223d-4879-9336-3d5f6c9d0c55/e8efbfc9-8d45-11ee-a91d-02038fb3271b?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
-            { name: 'The Boys', genre: 'Action', source: 'https://player.videasy.net/tv/76479/1/1', poster: 'https://m.media-amazon.com/images/M/MV5BZTIwNjdjZmUtZDJmOC00M2RmLTg2NTItMTMzZjZhNTk3YjVmXkEyXkFqcGdeQWFybm8@._V1_.jpg' 
-},
-     
-            { name: 'Succession', genre: 'Drama', source: 'https://player.videasy.net/tv/76331/1/1', poster: 'https://pixel.disco.nowtv.com/pcms/7efbf75e-064b-11f0-a9e8-335d0603481e/LAND_16_9?proposition=NOWOTT&language=en-GB&versionId=53251a10-5152-506c-b92c-624a2d4c50f8' },
-            { name: 'The Bear', genre: 'Drama', source: 'https://player.videasy.net/tv/136315/1/1', poster: 'https://img3.hulu.com/user/v3/artwork/05eb6a8e-90ed-4947-8c0b-e6536cbddd5f?base_image_bucket_name=image_manager&base_image=0560d824-aa9c-488f-96eb-20caba663b18&region=US&format=webp&size=952x536' },
-            { name: 'Oppenheimer', genre: 'Drama', source: 'https://player.videasy.net/movie/872585', poster: 'https://cdn.theplaylist.net/wp-content/uploads/2023/05/08064650/Oppenheimer-Christopher-Nolan.jpg' },
-            { name: 'Breaking Bad', genre: 'Drama', source: 'https://player.videasy.net/tv/1396/1/1', poster: 'https://fromabrooklynbasement.com/wp-content/uploads/2013/11/breaking-bad.jpg' },
-            { name: 
- 'The Last of Us', genre: 'Drama', source: 'https://player.videasy.net/tv/100088/1/1', poster: 'https://beam-images.warnermediacdn.com/2025-03/the-last-of-us-s2-og-image.jpg?host=wbd-dotcom-drupal-prd-us-east-1.s3.amazonaws.com' },
-            { name: 'Shutter Island', genre: 'Thriller', source: 'https://player.videasy.net/movie/11324', poster: 'https://miro.medium.com/1*dxOujk_R8RBsd6opk20pHg.jpeg' },
-            { name: 'Severance', genre: 'Thriller', source: 'https://player.videasy.net/tv/95396/1/1', poster: 'https://snworksceo.imgix.net/cds/6ad62cbd-3967-46a5-8ca6-afe75fa615aa.sized-1000x1000.jpg?w=1000&dpr=2' },
-            { name: 'Parasite', genre: 'Thriller', source: 'https://player.videasy.net/movie/496243', poster: 'https://i.ytimg.com/vi/SEUXfv87Wpk/sddefault.jpg' },
-    
-         { name: 'Prison Break', genre: 'Thriller', source: 'https://player.videasy.net/tv/2288/1/1', poster: 'https://occ-0-8407-2218.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABUaMFyRP15OajINlQ2JNRS6ig26Gy8l9ItNdaodHl1iBHGGAsY5MaK0IyxZX69cADj-fkgczz01pg4Nfj0CJ9Gfpcnf9uhgSAk2J.webp?r=dbe' },
-       
-            { name: 'Black Mirror', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/42009/1/1', poster: 'https://www.tvinsider.com/wp-content/uploads/2025/03/black-mirror-1-770x433.jpg' }
-        ];
+        let movieData = [];
 
         let currentPage = 1;
         let isFetchingMore = false;
@@ -706,7 +609,7 @@
             const row = document.createElement('div');
             row.className = 'row';
             const title = document.createElement('h2');
-            title.innerText = "Discover More";
+            title.innerText = "Discover More Favorites";
             const thumbs = document.createElement('div');
             thumbs.className = 'thumbnails';
 
@@ -741,8 +644,8 @@
 
             await renderTrendingRow(container);
 
-            const genres = [...new Set(movieData.map(m => m.genre))];
-            for (const genre of genres) {
+            const genreNames = ['Sci-Fi', 'Horror', 'Action', 'Drama', 'Thriller'];
+            for (const genre of genreNames) {
                 const row = document.createElement('div');
                 row.className = 'row';
                 const title = document.createElement('h2');
@@ -750,7 +653,7 @@
                 const thumbs = document.createElement('div');
                 thumbs.className = 'thumbnails';
                 
-                let genreContent = movieData.filter(m => m.genre === genre);
+                let genreContent = [];
                 
                 try {
                     const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
@@ -759,12 +662,13 @@
                     if (gId) {
                         const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}`);
                         const d = await res.json();
-                        const fetched = d.results.slice(0, 5).map(r => ({
+                        genreContent = d.results.slice(0, 10).map(r => ({
                             name: r.title, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                             source: `https://player.videasy.net/movie/${r.id}`,
-                            poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : genreContent[0].poster
+                            poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${r.title.replace(/ /g, '+')}`
                         }));
-                        genreContent = [...genreContent, ...fetched];
+                        
+                        movieData = [...movieData, ...genreContent];
                     }
                 } catch (e) {}
 
@@ -784,18 +688,18 @@
             const thumbs = document.createElement('div');
             thumbs.className = 'thumbnails';
             
-            let trendingList = [...movieData].sort(() => 0.5 - Math.random()).slice(0, 8);
+            let trendingList = [];
             
             try {
                 const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
                 const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
                 const d = await res.json();
-                const fetched = d.results.slice(0, 10).map(r => ({
+                trendingList = d.results.slice(0, 10).map(r => ({
                     name: r.title || r.name, genre: 'Trending', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                     source: `https://player.videasy.net/${r.media_type}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
                     poster: `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
                 }));
-                trendingList = [...fetched, ...trendingList];
+                movieData = [...movieData, ...trendingList];
             } catch (e) {}
 
             thumbs.innerHTML = trendingList.map(movie => createCardHTML(movie)).join('');
