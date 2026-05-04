@@ -964,25 +964,46 @@
                 source += separator + params; 
             }
 
-            const newWindow = window.open('about:blank', '_blank');
-            if (newWindow) {
-                newWindow.document.write(`
-                    <html>
-                        <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
-                        <body>
-                            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
-                                <iframe 
-                                    src="${source}" 
-                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
-                                    frameborder="0" 
-                                    allowfullscreen 
-                                    allow="autoplay; encrypted-media; gyroscope; picture-in-picture; payment; usb; vr; camera; microphone; accelerometer; display-capture; autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock; web-share"
-                                ></iframe>
-                            </div>
-                        </body>
-                    </html>
-                `);
-                newWindow.document.close();
+            const htmlContent = `
+                <html>
+                    <head>
+                        <title>Streaming: ${name}</title>
+                        <style>
+                            body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                            .player-container { position: relative; padding-bottom: 56.25%; height: 0; }
+                            iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="player-container">
+                            <iframe 
+                                id="video-player"
+                                src="${source}" 
+                                allow="autoplay; encrypted-media; gyroscope; picture-in-picture; payment; usb; vr; camera; microphone; accelerometer; display-capture; fullscreen; screen-wake-lock; web-share"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+                        <script>
+                            window.addEventListener("message", (event) => {
+                                // Example: Handle incoming control messages from parent site
+                                if (event.data.type === 'PLAYER_COMMAND') {
+                                    console.log('Command received:', event.data.cmd);
+                                }
+                            });
+                        <\/script>
+                    </body>
+                </html>
+            `;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            const playerWindow = window.open(blobUrl, '_blank');
+
+            if (playerWindow) {
+                // Example PostMessage Bridge setup
+                setTimeout(() => {
+                    playerWindow.postMessage({ type: 'PLAYER_INIT', movie: name }, '*');
+                }, 2000);
             } else {
                 alert("Please allow popups to stream.");
             }
@@ -1019,7 +1040,7 @@
 
         document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
         window.onload = async () => {
-            await renderAllRows();
+            renderAllRows();
             const savedUser = localStorage.getItem('vividUser');
             if(savedUser) document.getElementById('loginBtn').innerText = "User: " + savedUser;
             try {
