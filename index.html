@@ -268,6 +268,16 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-rating {
+            font-size: 0.75rem;
+            color: #6366f1;
+            font-weight: bold;
+            margin-left: 10px;
         }
 
         .watchlist-add {
@@ -578,8 +588,12 @@
             { name: 'Black Mirror', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/42009/1/1', poster: 'https://www.tvinsider.com/wp-content/uploads/2025/03/black-mirror-1-770x433.jpg' }
         ];
 
+        let currentPage = 1;
+        let isFetchingMore = false;
+
         async function refreshMovieDatabase() {
             console.log("Checking for updates...");
+            currentPage = 1;
             renderAllRows();
             renderRecommendations();
         }
@@ -590,6 +604,10 @@
         window.addEventListener('scroll', () => {
             window.scrollY > 80 ? navbar.classList.add('nav-black') : navbar.classList.remove('nav-black');
             window.scrollY > 500 ? scrollBtn.style.display = 'block' : scrollBtn.style.display = 'none';
+
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+                if (!isFetchingMore) loadMoreContent();
+            }
         });
 
 
@@ -631,6 +649,7 @@
                         .map(res => ({
                             name: res.title || res.name,
                             genre: 'Global Discovery',
+                            rating: res.vote_average ? res.vote_average.toFixed(1) : null,
                             source: `https://player.videasy.net/${res.media_type}/${res.id}${res.media_type === 'tv' ? '/1/1' : ''}`,
                             poster: res.backdrop_path ? `https://image.tmdb.org/t/p/w500${res.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${(res.title || res.name).replace(/ /g, '+')}`
                         }));
@@ -679,6 +698,38 @@
             });
         }
 
+        async function loadMoreContent() {
+            isFetchingMore = true;
+            currentPage++;
+            const container = document.getElementById('content-rows');
+            
+            const row = document.createElement('div');
+            row.className = 'row';
+            const title = document.createElement('h2');
+            title.innerText = "Discover More";
+            const thumbs = document.createElement('div');
+            thumbs.className = 'thumbnails';
+
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${currentPage}&sort_by=popularity.desc`);
+                const d = await res.json();
+                const fetched = d.results.map(r => ({
+                    name: r.title, genre: 'Discover', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                    source: `https://player.videasy.net/movie/${r.id}`,
+                    poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=No+Poster`
+                }));
+                thumbs.innerHTML = fetched.map(movie => createCardHTML(movie)).join('');
+                row.appendChild(title);
+                row.appendChild(thumbs);
+                container.appendChild(row);
+            } catch (e) {
+                console.error("Infinite scroll failed", e);
+            } finally {
+                isFetchingMore = false;
+            }
+        }
+
 
         async function renderAllRows() {
             const container = document.getElementById('content-rows');
@@ -709,7 +760,8 @@
                         const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}`);
                         const d = await res.json();
                         const fetched = d.results.slice(0, 5).map(r => ({
-                            name: r.title, genre: genre, source: `https://player.videasy.net/movie/${r.id}`,
+                            name: r.title, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                            source: `https://player.videasy.net/movie/${r.id}`,
                             poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : genreContent[0].poster
                         }));
                         genreContent = [...genreContent, ...fetched];
@@ -739,7 +791,7 @@
                 const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
                 const d = await res.json();
                 const fetched = d.results.slice(0, 10).map(r => ({
-                    name: r.title || r.name, genre: 'Trending',
+                    name: r.title || r.name, genre: 'Trending', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                     source: `https://player.videasy.net/${r.media_type}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
                     poster: `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
                 }));
@@ -760,7 +812,10 @@
                         <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
                         <img src="${movie.poster}" alt="${movie.name}">
                     </div>
-                    <div class="card-title">${movie.name}</div>
+                    <div class="card-title">
+                        ${movie.name}
+                        ${movie.rating ? `<span class="card-rating">★ ${movie.rating}</span>` : ''}
+                    </div>
                 </div>
             `;
         }
