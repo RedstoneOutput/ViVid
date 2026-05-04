@@ -227,19 +227,41 @@
 
         .card {
             min-width: 280px;
-            height: 158px;
-            background-color: #1e1e24;
+            background-color: transparent;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible;
             cursor: pointer;
             transition: all 0.4s ease;
             position: relative;
             flex-shrink: 0; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-img-container {
+            width: 100%;
+            height: 158px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #1e1e24;
+            position: relative;
         }
 
         .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
 
-        .card:hover { transform: scale(1.1); border: 2px solid #6366f1; z-index: 10; }
+        .card:hover { transform: scale(1.05); z-index: 10; }
+        .card:hover .card-img-container { border: 2px solid #6366f1; }
+
+        .card-title {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            padding: 0 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .watchlist-add {
             position: absolute;
@@ -433,7 +455,7 @@
             <div class="thumbnails" id="recommendation-grid"></div>
         </div>
         
-        <div class="row" id="search-results-row" style="display: none;">
+        <div class="row" id="search-results-row" style="display: none; margin-top: 100px;">
             <h2 id="search-results-title">Search Results</h2>
             <div class="thumbnails" id="search-results-grid"></div>
         </div>
@@ -568,14 +590,21 @@
             const query = document.getElementById('searchBar').value.toLowerCase().trim();
             const searchRow = document.getElementById('search-results-row');
             const searchGrid = document.getElementById('search-results-grid');
+            const hero = document.getElementById('hero-section');
+            const filterBar = document.querySelector('.filter-bar');
             
             if (query === "") {
                 searchRow.style.display = 'none';
+                hero.style.display = 'flex';
+                filterBar.style.display = 'flex';
                 document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'block');
                 return;
             }
 
+            // Hide everything else to show search results at top
             document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'none');
+            hero.style.display = 'none';
+            filterBar.style.display = 'none';
             searchRow.style.display = 'block';
 
 
@@ -635,7 +664,7 @@
             cards.forEach(card => {
                 const movieGenre = card.getAttribute('data-genre');
                 if (activeGenres.size === 0 || activeGenres.has(movieGenre)) {
-                    card.style.display = 'block';
+                    card.style.display = 'flex';
                 } else {
                  
                     card.style.display = 'none';
@@ -705,8 +734,11 @@
 
             return `
                 <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" onclick='openDynamicPlayer(${JSON.stringify(movie).replace(/'/g, "&apos;")})'>
-                    <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
-                    <img src="${movie.poster}" alt="${movie.name}">
+                    <div class="card-img-container">
+                        <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
+                        <img src="${movie.poster}" alt="${movie.name}">
+                    </div>
+                    <div class="card-title">${movie.name}</div>
                 </div>
             `;
         }
