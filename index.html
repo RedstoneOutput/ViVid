@@ -243,6 +243,8 @@
             flex-shrink: 0; 
             display: flex;
             flex-direction: column;
+            content-visibility: auto;
+            contain-intrinsic-size: 280px 200px;
         }
 
         .card-img-container {
@@ -406,6 +408,16 @@
             transform: translateY(-5px);
             background-color: #4f46e5;
         }
+
+        #discover-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding-right: 4%;
+        }
+        #discover-grid .card {
+            min-width: unset;
+        }
     </style>
 </head>
 <body>
@@ -493,10 +505,12 @@
 
         let currentPage = 1;
         let isFetchingMore = false;
+        let genrePages = {};
 
         async function refreshMovieDatabase() {
             console.log("Checking for updates...");
             currentPage = 1;
+            genrePages = {};
             renderAllRows();
             renderRecommendations();
         }
@@ -511,7 +525,32 @@
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
                 if (!isFetchingMore) loadMoreContent();
             }
+            
+            manageDiscoverState();
         });
+
+        function manageDiscoverState() {
+            const grid = document.getElementById('discover-grid');
+            if (!grid) return;
+            
+            const rect = grid.getBoundingClientRect();
+            if (rect.bottom < -200) {
+                if (grid.children.length > 0) {
+                    const movies = [];
+                    grid.querySelectorAll('.card').forEach(card => {
+                        movies.push(card.dataset.movieObj);
+                    });
+                    sessionStorage.setItem('unloadedDiscoverMovies', JSON.stringify(movies));
+                    grid.innerHTML = '';
+                }
+            } else if (rect.top < window.innerHeight + 200 && grid.children.length === 0) {
+                const saved = sessionStorage.getItem('unloadedDiscoverMovies');
+                if (saved) {
+                    const movies = JSON.parse(saved);
+                    grid.innerHTML = movies.map(m => createCardHTML(JSON.parse(m))).join('');
+                }
+            }
+        }
 
 
         async function handleSearch() {
@@ -602,34 +641,64 @@
         }
 
         async function loadMoreContent() {
+            if (isFetchingMore) return;
             isFetchingMore = true;
             currentPage++;
-            const container = document.getElementById('content-rows');
             
-            const row = document.createElement('div');
-            row.className = 'row';
-            const title = document.createElement('h2');
-            title.innerText = "Discover More Favorites";
-            const thumbs = document.createElement('div');
-            thumbs.className = 'thumbnails';
+            const grid = document.getElementById('discover-grid');
+            if (!grid) {
+                 isFetchingMore = false;
+                 return;
+            }
 
             try {
                 const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
                 const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${currentPage}&sort_by=popularity.desc`);
-                const d = await res.json();
+                const d = await response.json();
                 const fetched = d.results.map(r => ({
                     name: r.title, genre: 'Discover', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                     source: `https://player.videasy.net/movie/${r.id}`,
                     poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=No+Poster`
                 }));
-                thumbs.innerHTML = fetched.map(movie => createCardHTML(movie)).join('');
-                row.appendChild(title);
-                row.appendChild(thumbs);
-                container.appendChild(row);
+                grid.innerHTML += fetched.map(movie => createCardHTML(movie)).join('');
+                sessionStorage.setItem('lastDiscoverPage', currentPage);
             } catch (e) {
                 console.error("Infinite scroll failed", e);
             } finally {
                 isFetchingMore = false;
+            }
+        }
+
+        async function loadMoreGenreContent(genre, thumbsElement) {
+            if (thumbsElement.dataset.loading === "true") return;
+            thumbsElement.dataset.loading = "true";
+            
+            const tmdbGenreMap = { 'Sci-Fi': 878, 'Horror': 27, 'Action': 28, 'Drama': 18, 'Thriller': 53, 'Trending': 'trending' };
+            genrePages[genre] = (genrePages[genre] || 1) + 1;
+            
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                let url;
+                if (genre === 'Trending') {
+                    url = `https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${genrePages[genre]}`;
+                } else {
+                    url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${tmdbGenreMap[genre]}&page=${genrePages[genre]}`;
+                }
+
+                const res = await fetch(url);
+                const d = await res.json();
+                const fetched = d.results.map(r => ({
+                    name: r.title || r.name, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                    source: `https://player.videasy.net/${r.media_type || 'movie'}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
+                    poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${(r.title || r.name).replace(/ /g, '+')}`
+                }));
+                
+                movieData = [...movieData, ...fetched];
+                thumbsElement.innerHTML += fetched.map(movie => createCardHTML(movie)).join('');
+            } catch (e) {
+                console.error(`Failed to load more for ${genre}`, e);
+            } finally {
+                thumbsElement.dataset.loading = "false";
             }
         }
 
@@ -652,6 +721,11 @@
                 title.innerText = genre + " Collection";
                 const thumbs = document.createElement('div');
                 thumbs.className = 'thumbnails';
+                thumbs.addEventListener('scroll', () => {
+                    if (thumbs.scrollLeft + thumbs.clientWidth >= thumbs.scrollWidth - 100) {
+                        loadMoreGenreContent(genre, thumbs);
+                    }
+                });
                 
                 let genreContent = [];
                 
@@ -660,9 +734,9 @@
                     const tmdbGenreMap = { 'Sci-Fi': 878, 'Horror': 27, 'Action': 28, 'Drama': 18, 'Thriller': 53 };
                     const gId = tmdbGenreMap[genre];
                     if (gId) {
-                        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}`);
+                        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}&page=1`);
                         const d = await res.json();
-                        genreContent = d.results.slice(0, 10).map(r => ({
+                        genreContent = d.results.map(r => ({
                             name: r.title, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                             source: `https://player.videasy.net/movie/${r.id}`,
                             poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${r.title.replace(/ /g, '+')}`
@@ -677,6 +751,13 @@
                 row.appendChild(thumbs);
                 container.appendChild(row);
             }
+            
+            const discRow = document.createElement('div');
+            discRow.className = 'row';
+            discRow.innerHTML = `<h2>Discover More Favorites</h2><div id="discover-grid"></div>`;
+            container.appendChild(discRow);
+            currentPage = 0;
+            loadMoreContent();
         }
 
         async function renderTrendingRow(container) {
@@ -687,14 +768,19 @@
             title.innerText = "Trending Now";
             const thumbs = document.createElement('div');
             thumbs.className = 'thumbnails';
+            thumbs.addEventListener('scroll', () => {
+                if (thumbs.scrollLeft + thumbs.clientWidth >= thumbs.scrollWidth - 100) {
+                    loadMoreGenreContent('Trending', thumbs);
+                }
+            });
             
             let trendingList = [];
             
             try {
                 const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
-                const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`);
+                const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=1`);
                 const d = await res.json();
-                trendingList = d.results.slice(0, 10).map(r => ({
+                trendingList = d.results.map(r => ({
                     name: r.title || r.name, genre: 'Trending', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
                     source: `https://player.videasy.net/${r.media_type}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
                     poster: `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
@@ -709,9 +795,9 @@
         }
 
         function createCardHTML(movie) {
-
+            const movieStr = JSON.stringify(movie).replace(/'/g, "&apos;");
             return `
-                <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" onclick='openDynamicPlayer(${JSON.stringify(movie).replace(/'/g, "&apos;")})'>
+                <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" data-movie-obj='${movieStr}' onclick='openDynamicPlayer(${movieStr})'>
                     <div class="card-img-container">
                         <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
                         <img src="${movie.poster}" alt="${movie.name}">
@@ -844,7 +930,7 @@
                     <html>
                         <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
                         <body>
-                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation allow-pointer-lock allow-popups" allowfullscreen allow="autoplay; encrypted-media"></iframe>
                         </body>
                     </html>
                 `);
