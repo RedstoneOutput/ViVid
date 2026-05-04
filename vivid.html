@@ -54,6 +54,13 @@
             font-weight: 800;
             letter-spacing: -1px;
             text-decoration: none;
+            animation: logoPulse 3s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #6366f1); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 15px #6366f1); }
         }
 
         .logo span { color: #a5b4fc; }
@@ -236,6 +243,8 @@
             flex-shrink: 0; 
             display: flex;
             flex-direction: column;
+            content-visibility: auto;
+            contain-intrinsic-size: 280px 200px;
         }
 
         .card-img-container {
@@ -261,6 +270,16 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-rating {
+            font-size: 0.75rem;
+            color: #6366f1;
+            font-weight: bold;
+            margin-left: 10px;
         }
 
         .watchlist-add {
@@ -383,11 +402,61 @@
             font-size: 1.5rem;
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #scrollTopBtn::after {
+            content: '▲';
+            font-size: 1rem;
         }
 
         #scrollTopBtn:hover {
             transform: translateY(-5px);
             background-color: #4f46e5;
+        }
+
+        #discover-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding-right: 4%;
+        }
+        #discover-grid .card {
+            min-width: unset;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 4%;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .search-container {
+                order: 3;
+                max-width: 100%;
+                margin: 0;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero-title {
+                font-size: 3rem;
+            }
+            .hero-description {
+                font-size: 1rem;
+            }
+            .card {
+                min-width: 200px;
+            }
+            .card-img-container {
+                height: 112px;
+            }
+            #discover-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
         }
     </style>
 </head>
@@ -472,107 +541,16 @@
 
         const DB_ID = '69aa41910001b6457cb0'; 
         const COL_ID = 'watchlists';
-        let movieData = [
-            { 
-                name: 'Interstellar', 
-                genre: 'Sci-Fi',
-                source: 'https://player.videasy.net/movie/157336', 
-                poster: 'https://fc04.deviantart.net/fs71/f/2014/045/a/2/interstellar_by_visuasys-d6ibj30.jpg' 
-            },
- 
-            { 
-                name: 'Five Nights at Freddys', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/507089', 
-                poster: 'https://m.media-amazon.com/images/M/MV5BNzFkMDE2ZmEtOWMwNy00MWM2LThlNjMtZWQzNWY5MTJjZjcxXkEyXkFqcGc@._V1_.jpg' 
-            },
- 
-           { 
-                name: 'M3gan', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/536554', 
-                poster: 'https://www.joblo.com/wp-content/uploads/2022/10/m3gan-trailer-featured-1280x720.jpg' 
-            },
-    
-       { 
-                name: 'Tremors', 
-                genre: 'Horror',
-                source: 'https://player.videasy.net/movie/9362', 
-                poster: 'https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12070_p_v10_aj.jpg' 
-            },
-       
-   { 
-                name: 'Back to the Future', 
-                genre: 'Sci-Fi',
-                source: 'https://player.videasy.net/movie/105', 
-                poster: 'https://i.ytimg.com/vi/Am4JRnVQeh4/maxresdefault.jpg' 
-            },
-       
-  { 
-                name: 'Supernatural', 
-                genre: 'Drama',
-                source: 'https://player.videasy.net/tv/1622/1/1', 
-                poster: 'https://m.media-amazon.com/images/S/pv-target-images/3b871fa3954a785c5c1018c722704e9004dde85f0abd040b6b334dd8835e0846.jpg' 
-            },
-          
-   { 
-  
-               name: 'The Rookie', 
-                genre: 'Drama',
-                source: 'https://player.videasy.net/tv/79744/1/1', 
-                poster: 'https://whatsondisneyplus.b-cdn.net/wp-content/uploads/2025/12/the-rookie.webp' 
-            },
-            { 
-     
-            name: 'Peacemaker', 
-                genre: 'Action',
-                source: 'https://player.videasy.net/tv/110492/1/1', 
-                poster: 'https://i0.wp.com/multiverseofcolor.com/wp-content/uploads/2025/08/new-poster-for-peacemaker-season-2.png?resize=1080%2C748&ssl=1' 
-            },
-            { 
-  
-        name: 'You', 
-                genre: 'Thriller',
-                source: 'https://player.videasy.net/tv/78191/1/1', 
-                poster: 'https://sm.mashable.com/t/mashable_me/photo/default/untitled-2025-04-29t113036500_sm3y.1248.jpg' 
-            },
-          
-   { name: 'The Matrix', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/603', poster: 'https://i0.wp.com/www.michigandaily.com/wp-content/uploads/2020/11/Screen-Shot-2021-05-19-at-12.59.41-PM.png?fit=2400%2C1600&ssl=1' },
-            { name: 'Inception', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/27205', poster: 'https://miro.medium.com/v2/resize:fit:1400/1*xLahrUiFfXAs8s_Q8JKcbA@2x.jpeg' },
-            { name: 'Stranger Things', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/66732/1/1', poster: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png' },
-            { name: 'Blade Runner 2049', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/335984', poster: 'https://occ-0-8407-2219.1.nflxso.net/dnm/api/v6/6AYY37jfdO6hpXcMjf9Yu5cnmO0/AAAABaHT4U_VI3Hpghhv_yb3A98yiUsAK8a5E3lkBU9zp88a0HprtBtvvbcCwXhfxR_9xqQfkzY9hwKe8G3S5TwNT7J9hpwRuDk8zyeD.jpg?r=ad3' },
-            { name: 'Dune', genre: 'Sci-Fi', source: 'https://player.videasy.net/movie/438631', poster: 'https://ntvb.tmsimg.com/assets/p16645155_v_h8_ae.jpg?w=960&h=540' },
- 
-       
-            { name: 'The Conjuring', genre: 'Horror', source: 'https://player.videasy.net/movie/138843', poster: 'https://ntvb.tmsimg.com/assets/p9379266_v_h10_ab.jpg?w=1280&h=720' },
-            { name: 'IT', genre: 'Horror', source: 'https://player.videasy.net/movie/346364', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/1fef0800-258f-49f5-84a5-6a1f88173769/a8a0597f-66ba-4b11-af95-c392d3983838?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
-            { name: 'A Quiet Place', genre: 'Horror', source: 'https://player.videasy.net/movie/447332', poster: 'https://thecollision.org/wp-content/uploads/2019/01/A-Quiet-Place-banner-1.jpg' },
-            { name: 'Halloween', genre: 'Horror', source: 'https://player.videasy.net/movie/424139', poster: 'https://static01.nyt.com/images/2018/10/19/arts/19Halloween1/19Halloween1-videoSixteenByNineJumbo1600.jpg' },
-            { name: 
- 'The Dark Knight', genre: 'Action', source: 'https://player.videasy.net/movie/155', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-joDcLDH_T5M67nb9suEPmVsQjx6zM5gaMg&s' },
-            { name: 'John Wick', genre: 'Action', source: 'https://player.videasy.net/movie/245891', poster: 'https://spoilertown.com/wp-content/uploads/2025/05/john-wick-2014.webp' },
-            { name: 'Top Gun: Maverick', genre: 'Action', source: 'https://player.videasy.net/movie/361743', poster: 'https://thumbnails.cbsig.net/_x/w1200/CBS_Production_Entertainment_VMS/2022/10/26/2091444291941/TGMAV_SAlone_16_9_1920x1080_1781067_1920x1080.jpg' },
-            { name: 'Mad Max: Fury Road', genre: 'Action', source: 'https://player.videasy.net/movie/76341', poster: 'https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/8cde025a-223d-4879-9336-3d5f6c9d0c55/e8efbfc9-8d45-11ee-a91d-02038fb3271b?host=wbd-images.prod-vod.h264.io&partner=beamcom' },
-            { name: 'The Boys', genre: 'Action', source: 'https://player.videasy.net/tv/76479/1/1', poster: 'https://m.media-amazon.com/images/M/MV5BZTIwNjdjZmUtZDJmOC00M2RmLTg2NTItMTMzZjZhNTk3YjVmXkEyXkFqcGdeQWFybm8@._V1_.jpg' 
-},
-     
-            { name: 'Succession', genre: 'Drama', source: 'https://player.videasy.net/tv/76331/1/1', poster: 'https://pixel.disco.nowtv.com/pcms/7efbf75e-064b-11f0-a9e8-335d0603481e/LAND_16_9?proposition=NOWOTT&language=en-GB&versionId=53251a10-5152-506c-b92c-624a2d4c50f8' },
-            { name: 'The Bear', genre: 'Drama', source: 'https://player.videasy.net/tv/136315/1/1', poster: 'https://img3.hulu.com/user/v3/artwork/05eb6a8e-90ed-4947-8c0b-e6536cbddd5f?base_image_bucket_name=image_manager&base_image=0560d824-aa9c-488f-96eb-20caba663b18&region=US&format=webp&size=952x536' },
-            { name: 'Oppenheimer', genre: 'Drama', source: 'https://player.videasy.net/movie/872585', poster: 'https://cdn.theplaylist.net/wp-content/uploads/2023/05/08064650/Oppenheimer-Christopher-Nolan.jpg' },
-            { name: 'Breaking Bad', genre: 'Drama', source: 'https://player.videasy.net/tv/1396/1/1', poster: 'https://fromabrooklynbasement.com/wp-content/uploads/2013/11/breaking-bad.jpg' },
-            { name: 
- 'The Last of Us', genre: 'Drama', source: 'https://player.videasy.net/tv/100088/1/1', poster: 'https://beam-images.warnermediacdn.com/2025-03/the-last-of-us-s2-og-image.jpg?host=wbd-dotcom-drupal-prd-us-east-1.s3.amazonaws.com' },
-            { name: 'Shutter Island', genre: 'Thriller', source: 'https://player.videasy.net/movie/11324', poster: 'https://miro.medium.com/1*dxOujk_R8RBsd6opk20pHg.jpeg' },
-            { name: 'Severance', genre: 'Thriller', source: 'https://player.videasy.net/tv/95396/1/1', poster: 'https://snworksceo.imgix.net/cds/6ad62cbd-3967-46a5-8ca6-afe75fa615aa.sized-1000x1000.jpg?w=1000&dpr=2' },
-            { name: 'Parasite', genre: 'Thriller', source: 'https://player.videasy.net/movie/496243', poster: 'https://i.ytimg.com/vi/SEUXfv87Wpk/sddefault.jpg' },
-    
-         { name: 'Prison Break', genre: 'Thriller', source: 'https://player.videasy.net/tv/2288/1/1', poster: 'https://occ-0-8407-2218.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABUaMFyRP15OajINlQ2JNRS6ig26Gy8l9ItNdaodHl1iBHGGAsY5MaK0IyxZX69cADj-fkgczz01pg4Nfj0CJ9Gfpcnf9uhgSAk2J.webp?r=dbe' },
-       
-            { name: 'Black Mirror', genre: 'Sci-Fi', source: 'https://player.videasy.net/tv/42009/1/1', poster: 'https://www.tvinsider.com/wp-content/uploads/2025/03/black-mirror-1-770x433.jpg' }
-        ];
+        let movieData = [];
+
+        let currentPage = 1;
+        let isFetchingMore = false;
+        let genrePages = {};
 
         async function refreshMovieDatabase() {
             console.log("Checking for updates...");
+            currentPage = 1;
+            genrePages = {};
             renderAllRows();
             renderRecommendations();
         }
@@ -582,8 +560,37 @@
         const scrollBtn = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => {
             window.scrollY > 80 ? navbar.classList.add('nav-black') : navbar.classList.remove('nav-black');
-            window.scrollY > 500 ? scrollBtn.style.display = 'block' : scrollBtn.style.display = 'none';
+            window.scrollY > 500 ? scrollBtn.style.display = 'flex' : scrollBtn.style.display = 'none';
+
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
+                if (!isFetchingMore) loadMoreContent();
+            }
+            
+            manageDiscoverState();
         });
+
+        function manageDiscoverState() {
+            const grid = document.getElementById('discover-grid');
+            if (!grid) return;
+            
+            const rect = grid.getBoundingClientRect();
+            if (rect.bottom < -200) {
+                if (grid.children.length > 0) {
+                    const movies = [];
+                    grid.querySelectorAll('.card').forEach(card => {
+                        movies.push(card.dataset.movieObj);
+                    });
+                    sessionStorage.setItem('unloadedDiscoverMovies', JSON.stringify(movies));
+                    grid.innerHTML = '';
+                }
+            } else if (rect.top < window.innerHeight + 200 && grid.children.length === 0) {
+                const saved = sessionStorage.getItem('unloadedDiscoverMovies');
+                if (saved) {
+                    const movies = JSON.parse(saved);
+                    grid.innerHTML = movies.map(m => createCardHTML(JSON.parse(m))).join('');
+                }
+            }
+        }
 
 
         async function handleSearch() {
@@ -624,6 +631,7 @@
                         .map(res => ({
                             name: res.title || res.name,
                             genre: 'Global Discovery',
+                            rating: res.vote_average ? res.vote_average.toFixed(1) : null,
                             source: `https://player.videasy.net/${res.media_type}/${res.id}${res.media_type === 'tv' ? '/1/1' : ''}`,
                             poster: res.backdrop_path ? `https://image.tmdb.org/t/p/w500${res.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${(res.title || res.name).replace(/ /g, '+')}`
                         }));
@@ -672,73 +680,172 @@
             });
         }
 
-
-        function renderAllRows() {
-            const container = document.getElementById('content-rows');
+        async function loadMoreContent() {
+            if (isFetchingMore) return;
+            isFetchingMore = true;
+            currentPage++;
             
+            const grid = document.getElementById('discover-grid');
+            if (!grid) {
+                 isFetchingMore = false;
+                 return;
+            }
 
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${currentPage}&sort_by=popularity.desc`);
+                const d = await res.json();
+                const fetched = d.results.map(r => ({
+                    name: r.title, genre: 'Discover', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                    source: `https://player.videasy.net/movie/${r.id}`,
+                    poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=No+Poster`
+                }));
+                grid.innerHTML += fetched.map(movie => createCardHTML(movie)).join('');
+                sessionStorage.setItem('lastDiscoverPage', currentPage);
+            } catch (e) {
+                console.error("Infinite scroll failed", e);
+            } finally {
+                isFetchingMore = false;
+            }
+        }
+
+        async function loadMoreGenreContent(genre, thumbsElement) {
+            if (thumbsElement.dataset.loading === "true") return;
+            thumbsElement.dataset.loading = "true";
+            
+            const tmdbGenreMap = { 'Sci-Fi': 878, 'Horror': 27, 'Action': 28, 'Drama': 18, 'Thriller': 53, 'Trending': 'trending' };
+            genrePages[genre] = (genrePages[genre] || 1) + 1;
+            
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                let url;
+                if (genre === 'Trending') {
+                    url = `https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${genrePages[genre]}`;
+                } else {
+                    url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${tmdbGenreMap[genre]}&page=${genrePages[genre]}`;
+                }
+
+                const res = await fetch(url);
+                const d = await res.json();
+                const fetched = d.results.map(r => ({
+                    name: r.title || r.name, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                    source: `https://player.videasy.net/${r.media_type || 'movie'}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
+                    poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${(r.title || r.name).replace(/ /g, '+')}`
+                }));
+                
+                movieData = [...movieData, ...fetched];
+                thumbsElement.innerHTML += fetched.map(movie => createCardHTML(movie)).join('');
+            } catch (e) {
+                console.error(`Failed to load more for ${genre}`, e);
+            } finally {
+                thumbsElement.dataset.loading = "false";
+            }
+        }
+
+
+        async function renderAllRows() {
+            const container = document.getElementById('content-rows');
             const recRow = document.getElementById('recommendation-row');
             const searchRow = document.getElementById('search-results-row');
             container.innerHTML = '';
             container.appendChild(recRow);
             container.appendChild(searchRow);
 
+            await renderTrendingRow(container);
 
-            const genres = [...new Set(movieData.map(m => m.genre))];
-
-
-            renderTrendingRow(container);
-
-
-            genres.forEach(genre => {
+            const genreNames = ['Sci-Fi', 'Horror', 'Action', 'Drama', 'Thriller'];
+            for (const genre of genreNames) {
                 const row = document.createElement('div');
                 row.className = 'row';
-                
                 const title = document.createElement('h2');
                 title.innerText = genre + " Collection";
-                
                 const thumbs = document.createElement('div');
                 thumbs.className = 'thumbnails';
+                thumbs.addEventListener('scroll', () => {
+                    if (thumbs.scrollLeft + thumbs.clientWidth >= thumbs.scrollWidth - 100) {
+                        loadMoreGenreContent(genre, thumbs);
+                    }
+                });
                 
-                const moviesInGenre = movieData.filter(m => m.genre === genre);
-                thumbs.innerHTML = moviesInGenre.map(movie => createCardHTML(movie)).join('');
+                let genreContent = [];
                 
+                try {
+                    const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                    const tmdbGenreMap = { 'Sci-Fi': 878, 'Horror': 27, 'Action': 28, 'Drama': 18, 'Thriller': 53 };
+                    const gId = tmdbGenreMap[genre];
+                    if (gId) {
+                        const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${gId}&page=1`);
+                        const d = await res.json();
+                        genreContent = d.results.map(r => ({
+                            name: r.title, genre: genre, rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                            source: `https://player.videasy.net/movie/${r.id}`,
+                            poster: r.backdrop_path ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}` : `https://placehold.co/280x158/1e1e24/6366f1?text=${r.title.replace(/ /g, '+')}`
+                        }));
+                        
+                        movieData = [...movieData, ...genreContent];
+                    }
+                } catch (e) {}
+
+                thumbs.innerHTML = genreContent.map(movie => createCardHTML(movie)).join('');
                 row.appendChild(title);
                 row.appendChild(thumbs);
                 container.appendChild(row);
-            });
+            }
+            
+            const discRow = document.createElement('div');
+            discRow.className = 'row';
+            discRow.innerHTML = `<h2>Discover More Favorites</h2><div id="discover-grid"></div>`;
+            container.appendChild(discRow);
+            currentPage = 0;
+            loadMoreContent();
         }
 
-        function renderTrendingRow(container) {
+        async function renderTrendingRow(container) {
             const row = document.createElement('div');
             row.className = 'row';
             row.id = 'trending-row';
-            
             const title = document.createElement('h2');
-            title.id = 'trending-title';
             title.innerText = "Trending Now";
-            
             const thumbs = document.createElement('div');
             thumbs.className = 'thumbnails';
-            thumbs.id = 'trending-grid';
+            thumbs.addEventListener('scroll', () => {
+                if (thumbs.scrollLeft + thumbs.clientWidth >= thumbs.scrollWidth - 100) {
+                    loadMoreGenreContent('Trending', thumbs);
+                }
+            });
             
+            let trendingList = [];
+            
+            try {
+                const apiKey = 'e99d0f46955efb8bf445665f96ff6a3c';
+                const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=1`);
+                const d = await res.json();
+                trendingList = d.results.map(r => ({
+                    name: r.title || r.name, genre: 'Trending', rating: r.vote_average ? r.vote_average.toFixed(1) : null,
+                    source: `https://player.videasy.net/${r.media_type}/${r.id}${r.media_type === 'tv' ? '/1/1' : ''}`,
+                    poster: `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
+                }));
+                movieData = [...movieData, ...trendingList];
+            } catch (e) {}
 
-            thumbs.innerHTML = movieData.map(movie => createCardHTML(movie)).join('');
-            
+            thumbs.innerHTML = trendingList.map(movie => createCardHTML(movie)).join('');
             row.appendChild(title);
             row.appendChild(thumbs);
             container.appendChild(row);
         }
 
         function createCardHTML(movie) {
-
+            const movieStr = JSON.stringify(movie).replace(/'/g, "&apos;");
             return `
-                <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" onclick='openDynamicPlayer(${JSON.stringify(movie).replace(/'/g, "&apos;")})'>
+                <div class="card" data-name="${movie.name}" data-genre="${movie.genre}" data-movie-obj='${movieStr}' onclick='openDynamicPlayer(${movieStr})'>
                     <div class="card-img-container">
                         <div class="watchlist-add" onclick="event.stopPropagation(); addToWatchlist('${movie.name}')">+</div>
                         <img src="${movie.poster}" alt="${movie.name}">
                     </div>
-                    <div class="card-title">${movie.name}</div>
+                    <div class="card-title">
+                        ${movie.name}
+                        ${movie.rating ? `<span class="card-rating">★ ${movie.rating}</span>` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -853,21 +960,50 @@
             
             if(source.includes('videasy.net')) {
                 const separator = source.includes('?') ? '&' : '?';
-                const params = ["color=8B5CF6", "nextEpisode=true", "autoplayNextEpisode=true", "episodeSelector=true", "overlay=true"].join('&');
+                const params = ["nextEpisode=true", "autoplayNextEpisode=true", "episodeSelector=true", "overlay=true", "color=6366f1"].join('&');
                 source += separator + params; 
             }
 
-            const newWindow = window.open('about:blank', '_blank');
-            if (newWindow) {
-                newWindow.document.write(`
-                    <html>
-                        <head><title>Streaming: ${name}</title><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}</style></head>
-                        <body>
-                                <iframe src="${source}" frameborder="0" style="width:100%;height:100%;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-                        </body>
-                    </html>
-                `);
-                newWindow.document.close();
+            const htmlContent = `
+                <html>
+                    <head>
+                        <title>Streaming: ${name}</title>
+                        <style>
+                            body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                            .player-container { position: relative; padding-bottom: 56.25%; height: 0; }
+                            iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="player-container">
+                            <iframe 
+                                id="video-player"
+                                src="${source}" 
+                                allow="autoplay; encrypted-media; gyroscope; picture-in-picture; payment; usb; vr; camera; microphone; accelerometer; display-capture; fullscreen; screen-wake-lock; web-share"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+                        <script>
+                            window.addEventListener("message", (event) => {
+                                // Example: Handle incoming control messages from parent site
+                                if (event.data.type === 'PLAYER_COMMAND') {
+                                    console.log('Command received:', event.data.cmd);
+                                }
+                            });
+                        <\/script>
+                    </body>
+                </html>
+            `;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            const playerWindow = window.open(blobUrl, '_blank');
+
+            if (playerWindow) {
+                // Example PostMessage Bridge setup
+                setTimeout(() => {
+                    playerWindow.postMessage({ type: 'PLAYER_INIT', movie: name }, '*');
+                }, 2000);
             } else {
                 alert("Please allow popups to stream.");
             }
