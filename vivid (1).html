@@ -964,6 +964,9 @@
                 source += separator + params; 
             }
 
+            // Retrieve saved playback time for this specific video name
+            const savedTime = localStorage.getItem('vivid_progress_' + encodeURIComponent(name)) || 0;
+
             const htmlContent = `
                 <html>
                     <head>
@@ -984,12 +987,37 @@
                             ></iframe>
                         </div>
                         <script>
+                            const iframe = document.getElementById('video-player');
+                            const savedStartTime = ${savedTime};
+
+                            // Listen to state signals coming out of Videasy player container
                             window.addEventListener("message", (event) => {
-                                // Example: Handle incoming control messages from parent site
-                                if (event.data.type === 'PLAYER_COMMAND') {
-                                    console.log('Command received:', event.data.cmd);
+                                if (event.data) {
+                                    // Handle Videasy standard time update structure or player init commands
+                                    if (event.data.type === 'PLAYER_COMMAND') {
+                                        console.log('Command received:', event.data.cmd);
+                                    }
+                                    
+                                    // Tracking incoming progress ticks from embedded iframe contexts
+                                    if (event.data.currentTime) {
+                                        window.opener.postMessage({
+                                            type: 'VIVID_PROGRESS_TICK',
+                                            movie: ${JSON.stringify(name)},
+                                            time: event.data.currentTime
+                                        }, '*');
+                                    }
                                 }
                             });
+
+                            // Inject standard postMessage progress recovery triggers once loaded
+                            iframe.onload = () => {
+                                if (savedStartTime > 0) {
+                                    setTimeout(() => {
+                                        iframe.contentWindow.postMessage({ method: 'setCurrentTime', value: savedStartTime }, '*');
+                                        iframe.contentWindow.postMessage({ type: 'SEEK', time: savedStartTime }, '*');
+                                    }, 1500);
+                                }
+                            };
                         <\/script>
                     </body>
                 </html>
@@ -1039,6 +1067,15 @@
         };
 
         document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+
+        // Direct stream listener capturing incoming broadcasted time positions back to main thread
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'VIVID_PROGRESS_TICK') {
+                const key = 'vivid_progress_' + encodeURIComponent(event.data.movie);
+                localStorage.setItem(key, event.data.time);
+            }
+        });
+
         window.onload = async () => {
             renderAllRows();
             const savedUser = localStorage.getItem('vividUser');
