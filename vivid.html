@@ -593,6 +593,42 @@
     </div>
 
     <script>
+        if (window.location.protocol === 'content:' || window.location.protocol === 'file:' || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            const originalOpen = window.open;
+            window.open = function(url, target) {
+                if (url && url.startsWith('blob:')) {
+                    fetch(url).then(res => res.text()).then(html => {
+                        const match = html.match(/src="([^"]+)"/);
+                        const movieMatch = html.match(/Streaming: ([^<]+)/);
+                        const movieName = movieMatch ? movieMatch[1] : 'Movie';
+                        const originalSource = match ? match[1] : '';
+                        let overlay = document.createElement('div');
+                        overlay.style = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:99999;display:flex;flex-direction:column;";
+                        let closeBtn = document.createElement('button');
+                        closeBtn.innerText = "✕ Close Player";
+                        closeBtn.style = "background:#6366f1;color:#fff;border:none;padding:12px;font-weight:bold;cursor:pointer;text-align:center;font-size:1rem;";
+                        closeBtn.onclick = () => { overlay.remove(); };
+                        let iframe = document.createElement('iframe');
+                        iframe.src = originalSource;
+                        iframe.style = "flex-grow:1;border:none;width:100%;height:100%;";
+                        iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture; payment; usb; vr; camera; microphone; accelerometer; display-capture; fullscreen; screen-wake-lock; web-share";
+                        iframe.allowFullscreen = true;
+                        overlay.appendChild(closeBtn);
+                        overlay.appendChild(iframe);
+                        document.body.appendChild(overlay);
+                        window.addEventListener("message", (event) => {
+                            if (event.data && event.data.currentTime) {
+                                const key = 'vivid_progress_' + encodeURIComponent(movieName);
+                                localStorage.setItem(key, event.data.currentTime);
+                                if (typeof renderContinueWatchingRow === 'function') renderContinueWatchingRow();
+                            }
+                        });
+                    });
+                    return { postMessage: () => {}, closed: false };
+                }
+                return originalOpen(url, target);
+            };
+        }
 
         const { Client, Databases, ID, Account, Query } = Appwrite;
         const client = new Client()
