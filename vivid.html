@@ -594,6 +594,31 @@
 
     <script>
 
+        let safeStorage;
+        const memoryStorageFallback = {};
+
+        try {
+            const testKey = '__storage_test__';
+            window.localStorage.setItem(testKey, testKey);
+            window.localStorage.removeItem(testKey);
+            safeStorage = {
+                getItem: (key) => window.localStorage.getItem(key),
+                setItem: (key, value) => window.localStorage.setItem(key, value),
+                removeItem: (key) => window.localStorage.removeItem(key),
+                key: (index) => window.localStorage.key(index),
+                get length() { return window.localStorage.length; }
+            };
+        } catch (e) {
+            console.warn("localStorage is blocked or unavailable. Falling back to in-memory virtualization.");
+            safeStorage = {
+                getItem: (key) => key in memoryStorageFallback ? memoryStorageFallback[key] : null,
+                setItem: (key, value) => { memoryStorageFallback[key] = String(value); },
+                removeItem: (key) => { delete memoryStorageFallback[key]; },
+                key: (index) => Object.keys(memoryStorageFallback)[index] || null,
+                get length() { return Object.keys(memoryStorageFallback).length; }
+            };
+        }
+
         const { Client, Databases, ID, Account, Query } = Appwrite;
         const client = new Client()
             .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
@@ -925,14 +950,13 @@
         }
 
 
-        let userPreferences = JSON.parse(localStorage.getItem('vividPrefs')) ||
-[];
+        let userPreferences = JSON.parse(safeStorage.getItem('vividPrefs')) || [];
 
         function trackPreference(genre) {
             userPreferences.push(genre);
 
             if(userPreferences.length > 20) userPreferences.shift();
-            localStorage.setItem('vividPrefs', JSON.stringify(userPreferences));
+            safeStorage.setItem('vividPrefs', JSON.stringify(userPreferences));
             renderRecommendations();
         }
 
@@ -973,11 +997,11 @@
             }
 
             const itemsToRender = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('vivid_progress_')) {
+            for (let i = 0; i < safeStorage.length; i++) {
+                const key = safeStorage.key(i);
+                if (key && key.startsWith('vivid_progress_')) {
                     const movieName = decodeURIComponent(key.replace('vivid_progress_', ''));
-                    const savedTime = parseFloat(localStorage.getItem(key)) || 0;
+                    const savedTime = parseFloat(safeStorage.getItem(key)) || 0;
                     
                     if (savedTime > 0) {
                         let movie = movieData.find(m => m.name === movieName);
@@ -1003,14 +1027,13 @@
         }
 
 
-        let myWatchlist = JSON.parse(localStorage.getItem('vividWatchlist')) ||
-[];
+        let myWatchlist = JSON.parse(safeStorage.getItem('vividWatchlist')) || [];
 
         async function addToWatchlist(movieName) {
             if(!myWatchlist.includes(movieName)) {
 
                 myWatchlist.push(movieName);
-                localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+                safeStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
                 
 
                 const movie = movieData.find(m => m.name === movieName);
@@ -1044,7 +1067,7 @@
         async function removeFromWatchlist(movieName) {
 
             myWatchlist = myWatchlist.filter(m => m !== movieName);
-            localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+            safeStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
 
 
             try {
@@ -1077,12 +1100,12 @@
             }
 
            
-            const savedTime = localStorage.getItem('vivid_progress_' + encodeURIComponent(name)) || 0;
+            const savedTime = safeStorage.getItem('vivid_progress_' + encodeURIComponent(name)) || 0;
 
            
             const progressKey = 'vivid_progress_' + encodeURIComponent(name);
-            if (!localStorage.getItem(progressKey) || parseFloat(localStorage.getItem(progressKey)) === 0) {
-                localStorage.setItem(progressKey, '0.01');
+            if (!safeStorage.getItem(progressKey) || parseFloat(safeStorage.getItem(progressKey)) === 0) {
+                safeStorage.setItem(progressKey, '0.01');
                 renderContinueWatchingRow();
             }
 
@@ -1176,8 +1199,7 @@
                         </div>
                     </div>
                 `;
-            }).join('') ||
-"<p>Your list is empty</p>";
+            }).join('') || "<p>Your list is empty</p>";
         }
 
         document.getElementById('view-watchlist').onclick = () => {
@@ -1191,14 +1213,14 @@
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'VIVID_PROGRESS_TICK') {
                 const key = 'vivid_progress_' + encodeURIComponent(event.data.movie);
-                localStorage.setItem(key, event.data.time);
+                safeStorage.setItem(key, event.data.time);
                 renderContinueWatchingRow();
             }
         });
 
         window.onload = async () => {
             renderAllRows();
-            const savedUser = localStorage.getItem('vividUser');
+            const savedUser = safeStorage.getItem('vividUser');
             if(savedUser) document.getElementById('loginBtn').innerText = "User: " + savedUser;
             try {
                 await account.getSession('current');
@@ -1218,7 +1240,7 @@
                         myWatchlist.push(doc.movieName);
                     }
                 });
-                localStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
+                safeStorage.setItem('vividWatchlist', JSON.stringify(myWatchlist));
             } catch (e) {
                 console.warn("Cloud sync unavailable. Operating in local-only mode.");
             }
