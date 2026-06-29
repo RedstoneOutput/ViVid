@@ -138,6 +138,27 @@
 
         .sync-btn:hover { background: #6366f1; color: white; }
 
+        .discord-btn {
+            background: #5865F2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .discord-btn:hover {
+            background: #4752C4;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+        }
+
         .avatar {
             width: 35px;
             height: 35px;
@@ -505,6 +526,7 @@
             </ul>
         </nav>
         <div class="user-profile">
+            <a href="https://discord.gg/vtkGFKhg9Q" target="_blank" class="discord-btn" id="discordBtn">Join Discord</a>
             <button class="sync-btn" id="syncBtn" onclick="refreshMovieDatabase()"> Refresh Data</button>
             <button class="auth-btn" id="loginBtn">User: Guest</button>
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" class="avatar">
@@ -513,7 +535,7 @@
 
     <div class="app-recommendation-banner">
         <div class="app-recommendation-text">
-            💡 For the best streaming experience without interruptions, we highly recommend using the <strong>Stands Browser App</strong> or the <strong>Stands AdBlocker Chrome Extension</strong>.
+            For the best streaming experience without interruptions, we highly recommend using the <strong>Stands Browser App</strong> or the <strong>Stands AdBlocker Chrome Extension</strong>.
         </div>
     </div>
 
@@ -656,7 +678,7 @@
                 return;
             }
 
-            // Hide everything else to show search results at top
+            
             document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'none');
             hero.style.display = 'none';
             filterBar.style.display = 'none';
@@ -1125,7 +1147,7 @@
             const playerWindow = window.open(blobUrl, '_blank');
 
             if (playerWindow) {
-                // Example PostMessage Bridge setup
+                
                 setTimeout(() => {
                     playerWindow.postMessage({ type: 'PLAYER_INIT', movie: name }, '*');
                 }, 2000);
@@ -1165,7 +1187,7 @@
 
         document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
 
-        // Direct stream listener capturing incoming broadcasted time positions back to main thread
+        
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'VIVID_PROGRESS_TICK') {
                 const key = 'vivid_progress_' + encodeURIComponent(event.data.movie);
