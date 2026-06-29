@@ -24,6 +24,11 @@
             overflow-x: hidden;
             line-height: 1.5;
             scroll-behavior: smooth; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
 
@@ -140,6 +145,27 @@
             border: 2px solid #6366f1;
         }
 
+        .app-recommendation-banner {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(10, 10, 12, 0.6));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin: 100px 4% 0 4%;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+            backdrop-filter: blur(4px);
+        }
+
+        .app-recommendation-text {
+            font-size: 0.95rem;
+            color: #f0f0f0;
+            letter-spacing: 0.2px;
+        }
+
+        .app-recommendation-text strong {
+            color: #a5b4fc;
+        }
 
         .hero {
             height: 95vh;
@@ -256,9 +282,9 @@
             position: relative;
         }
 
-        .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; backface-visibility: hidden; transform: translateZ(0); }
 
-        .card:hover { transform: scale(1.05); z-index: 10; }
+        .card:hover { transform: scale(1.05) translateZ(0); z-index: 10; }
         .card:hover .card-img-container { border: 2px solid #6366f1; }
 
         .card-title {
@@ -442,6 +468,9 @@
             .nav-links {
                 display: none;
             }
+            .app-recommendation-banner {
+                margin: 140px 4% 0 4%;
+            }
             .hero-title {
                 font-size: 3rem;
             }
@@ -482,6 +511,12 @@
         </div>
     </header>
 
+    <div class="app-recommendation-banner">
+        <div class="app-recommendation-text">
+            💡 For the best streaming experience without interruptions, we highly recommend using the <strong>Stands Browser App</strong> or the <strong>Stands AdBlocker Chrome Extension</strong>.
+        </div>
+    </div>
+
     <button id="scrollTopBtn" onclick="window.scrollTo(0, 0)"></button>
 
     <div id="watchlist-modal">
@@ -519,6 +554,11 @@
     </div>
 
     <div class="main-container" id="content-rows">
+        <div class="row" id="continue-watching-row" style="display: none;">
+            <h2>Continue Watching</h2>
+            <div class="thumbnails" id="continue-watching-grid"></div>
+        </div>
+
         <div class="row" id="recommendation-row" style="display: none;">
             <h2 id="rec-title">Recommended for You</h2>
             <div class="thumbnails" id="recommendation-grid"></div>
@@ -604,7 +644,15 @@
                 searchRow.style.display = 'none';
                 hero.style.display = 'flex';
                 filterBar.style.display = 'flex';
-                document.querySelectorAll('.row:not(#search-results-row)').forEach(row => row.style.display = 'block');
+                document.querySelectorAll('.row:not(#search-results-row)').forEach(row => {
+                    if (row.id === 'continue-watching-row') {
+                        renderContinueWatchingRow();
+                    } else if (row.id === 'recommendation-row') {
+                        renderRecommendations();
+                    } else {
+                        row.style.display = 'block';
+                    }
+                });
                 return;
             }
 
@@ -735,6 +783,7 @@
                 
                 movieData = [...movieData, ...fetched];
                 thumbsElement.innerHTML += fetched.map(movie => createCardHTML(movie)).join('');
+                renderContinueWatchingRow();
             } catch (e) {
                 console.error(`Failed to load more for ${genre}`, e);
             } finally {
@@ -745,9 +794,11 @@
 
         async function renderAllRows() {
             const container = document.getElementById('content-rows');
+            const contRow = document.getElementById('continue-watching-row');
             const recRow = document.getElementById('recommendation-row');
             const searchRow = document.getElementById('search-results-row');
             container.innerHTML = '';
+            container.appendChild(contRow);
             container.appendChild(recRow);
             container.appendChild(searchRow);
 
@@ -798,6 +849,7 @@
             container.appendChild(discRow);
             currentPage = 0;
             loadMoreContent();
+            renderContinueWatchingRow();
         }
 
         async function renderTrendingRow(container) {
@@ -874,7 +926,7 @@
             const recRow = document.getElementById('recommendation-row');
             const recGrid = document.getElementById('recommendation-grid');
 
-            if (!topGenre) {
+            if (!topGenre || document.getElementById('searchBar').value.trim() !== "") {
                 recRow.style.display = 'none';
                 return;
             }
@@ -889,6 +941,44 @@
             }
         }
 
+        function renderContinueWatchingRow() {
+            const contRow = document.getElementById('continue-watching-row');
+            const contGrid = document.getElementById('continue-watching-grid');
+            
+            if (document.getElementById('searchBar').value.trim() !== "") {
+                contRow.style.display = 'none';
+                return;
+            }
+
+            const itemsToRender = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('vivid_progress_')) {
+                    const movieName = decodeURIComponent(key.replace('vivid_progress_', ''));
+                    const savedTime = parseFloat(localStorage.getItem(key)) || 0;
+                    
+                    if (savedTime > 0) {
+                        let movie = movieData.find(m => m.name === movieName);
+                        if (!movie) {
+                            movie = {
+                                name: movieName,
+                                genre: 'Continue',
+                                poster: `https://placehold.co/280x158/1e1e24/6366f1?text=${movieName.replace(/ /g, '+')}`,
+                                source: `https://player.videasy.net/movie/${movieName.replace(/ /g, '-')}`
+                            };
+                        }
+                        itemsToRender.push(movie);
+                    }
+                }
+            }
+
+            if (itemsToRender.length > 0) {
+                contRow.style.display = 'block';
+                contGrid.innerHTML = itemsToRender.map(movie => createCardHTML(movie)).join('');
+            } else {
+                contRow.style.display = 'none';
+            }
+        }
 
 
         let myWatchlist = JSON.parse(localStorage.getItem('vividWatchlist')) ||
@@ -966,6 +1056,13 @@
 
             // Retrieve saved playback time for this specific video name
             const savedTime = localStorage.getItem('vivid_progress_' + encodeURIComponent(name)) || 0;
+
+            // Trigger structural rendering update on current interface thread
+            const progressKey = 'vivid_progress_' + encodeURIComponent(name);
+            if (!localStorage.getItem(progressKey) || parseFloat(localStorage.getItem(progressKey)) === 0) {
+                localStorage.setItem(progressKey, '0.01');
+                renderContinueWatchingRow();
+            }
 
             const htmlContent = `
                 <html>
@@ -1073,6 +1170,7 @@
             if (event.data && event.data.type === 'VIVID_PROGRESS_TICK') {
                 const key = 'vivid_progress_' + encodeURIComponent(event.data.movie);
                 localStorage.setItem(key, event.data.time);
+                renderContinueWatchingRow();
             }
         });
 
@@ -1106,6 +1204,7 @@
 
             renderWatchlist();
             renderRecommendations(); 
+            renderContinueWatchingRow();
         };
     </script>
 </body>
