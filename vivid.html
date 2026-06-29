@@ -1076,10 +1076,10 @@
                 source += separator + params; 
             }
 
-            // Retrieve saved playback time for this specific video name
+           
             const savedTime = localStorage.getItem('vivid_progress_' + encodeURIComponent(name)) || 0;
 
-            // Trigger structural rendering update on current interface thread
+           
             const progressKey = 'vivid_progress_' + encodeURIComponent(name);
             if (!localStorage.getItem(progressKey) || parseFloat(localStorage.getItem(progressKey)) === 0) {
                 localStorage.setItem(progressKey, '0.01');
@@ -1109,15 +1109,15 @@
                             const iframe = document.getElementById('video-player');
                             const savedStartTime = ${savedTime};
 
-                            // Listen to state signals coming out of Videasy player container
+                            
                             window.addEventListener("message", (event) => {
                                 if (event.data) {
-                                    // Handle Videasy standard time update structure or player init commands
+                                  
                                     if (event.data.type === 'PLAYER_COMMAND') {
                                         console.log('Command received:', event.data.cmd);
                                     }
                                     
-                                    // Tracking incoming progress ticks from embedded iframe contexts
+                                    
                                     if (event.data.currentTime) {
                                         window.opener.postMessage({
                                             type: 'VIVID_PROGRESS_TICK',
@@ -1128,7 +1128,7 @@
                                 }
                             });
 
-                            // Inject standard postMessage progress recovery triggers once loaded
+                         
                             iframe.onload = () => {
                                 if (savedStartTime > 0) {
                                     setTimeout(() => {
